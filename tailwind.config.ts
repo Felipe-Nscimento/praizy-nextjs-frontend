@@ -14,16 +14,19 @@ const config: Config = {
         inter: ["var(--font-inter)", "sans-serif"],
       },
       colors: {
-        brand: { blue: "#2d7cf6", cyan: "#00c8e0", light: "#60b8ff" },
-        surface: { base: "#080c18", card: "#0d1225", elevated: "#111830", hover: "#161f3a" },
+        brand: {
+          blue:  "#2d7cf6",
+          cyan:  "#00c8e0",
+          light: "#60b8ff",
+        },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0.75rem",
+        md: "0.5rem",
+        sm: "0.375rem",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 };
 export default config;
