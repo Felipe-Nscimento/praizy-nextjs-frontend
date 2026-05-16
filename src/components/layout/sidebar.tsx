@@ -2,20 +2,37 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
-import { initials, nivelLabel, nivelColor, cn } from "@/lib/utils"
 import { Users, Calendar, RefreshCw, Church, Music, LogOut } from "lucide-react"
 import { api } from "@/lib/api"
+import { cn } from "@/lib/utils"
+import type { Nivel } from "@/types"
 
 const navItems = [
-  { href:"/dashboard/integrantes",  label:"Integrantes",   icon: Users },
-  { href:"/dashboard/escalas",      label:"Escalas",       icon: Calendar },
-  { href:"/dashboard/substituicoes",label:"Substituições", icon: RefreshCw },
+  { href:"/dashboard/integrantes",   label:"Integrantes",   icon: Users },
+  { href:"/dashboard/escalas",       label:"Escalas",       icon: Calendar },
+  { href:"/dashboard/substituicoes", label:"Substituições", icon: RefreshCw },
 ]
 
+const NIVEL_LABEL: Record<Nivel, string> = {
+  gestor:    "Gestor",
+  ministro:  "Ministro",
+  voluntario:"Voluntário",
+}
+
+const NIVEL_COLOR: Record<Nivel, string> = {
+  gestor:    "bg-blue-500/15 text-blue-400 border border-blue-500/25",
+  ministro:  "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25",
+  voluntario:"bg-white/5 text-slate-400 border border-white/10",
+}
+
+function initials(nome: string): string {
+  return nome.trim().split(" ").slice(0,2).map(w => w[0] || "").join("").toUpperCase() || "?"
+}
+
 export function Sidebar() {
-  const pathname           = usePathname()
+  const pathname = usePathname()
   const { auth, logout, podeGerenciarInt } = useAuth()
-  const router             = useRouter()
+  const router = useRouter()
 
   async function handleLogout() {
     try { await api.post("/auth/logout") } catch {}
@@ -23,7 +40,7 @@ export function Sidebar() {
     router.push("/login")
   }
 
-  if(!auth) return null
+  if (!auth) return null
   const { integrante, igreja } = auth
 
   return (
@@ -77,13 +94,13 @@ export function Sidebar() {
         <div className="flex items-center gap-2.5 px-2 py-1.5">
           <div className="w-8 h-8 rounded-full grad-brand flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden">
             {integrante.foto
-              ? <img src={integrante.foto} alt="" className="w-full h-full object-cover"/>
+              ? <img src={integrante.foto} alt="" className="w-full h-full object-cover" />
               : initials(integrante.nome)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-slate-200 truncate">{integrante.nome.split(" ")[0]}</div>
-            <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-full", nivelColor[integrante.nivel])}>
-              {nivelLabel[integrante.nivel]}
+            <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-full", NIVEL_COLOR[integrante.nivel])}>
+              {NIVEL_LABEL[integrante.nivel]}
             </span>
           </div>
           <button onClick={handleLogout}
