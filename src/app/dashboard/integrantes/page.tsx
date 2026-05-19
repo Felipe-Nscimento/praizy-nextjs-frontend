@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { api } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { Integrante } from "@/types"
 import { initials, nivelLabel, nivelColor, getRoleCat, roleColor, cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,6 @@ const NIVEL_OPTS = [
 
 export default function IntegrantesPage() {
   const { podeGerenciarInt }  = useAuth()
-  const { toast }             = useToast()
   const [lista, setLista]     = useState<Integrante[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen]       = useState(false)
@@ -36,9 +35,9 @@ export default function IntegrantesPage() {
 
   const load = useCallback(async () => {
     try { const r = await api.get("/integrantes"); setLista(r.data) }
-    catch { toast({ title:"Erro ao carregar", variant:"destructive" }) }
+    catch { toast.error("Erro ao carregar integrantes") }
     finally { setLoading(false) }
-  }, [toast])
+  }, [])
 
   useEffect(() => { load() }, [load])
 
@@ -60,8 +59,6 @@ export default function IntegrantesPage() {
 
   function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if(!f) return
-    new FileReader().onload = ev => setFoto(ev.target?.result as string);
-    (new FileReader()).readAsDataURL(f)
     const r = new FileReader()
     r.onload = ev => setFoto(ev.target?.result as string)
     r.readAsDataURL(f)
@@ -96,17 +93,17 @@ export default function IntegrantesPage() {
       if(!editId || form.senha) p.senha = form.senha
       if(!editId) await api.post("/integrantes", p)
       else        await api.put(`/integrantes/${editId}`, p)
-      toast({ title: editId ? "Atualizado!" : "Cadastrado!" })
+      toast.success(editId ? "Atualizado!" : "Cadastrado!")
       setOpen(false); await load()
     } catch(err: any) {
-      toast({ title: err.response?.data?.detail || "Erro ao salvar", variant:"destructive" })
+      toast.error(err.response?.data?.detail || "Erro ao salvar")
     } finally { setSaving(false) }
   }
 
   async function deletar(id: number) {
     if(!confirm("Remover este integrante?")) return
-    try { await api.delete(`/integrantes/${id}`); toast({ title:"Removido." }); await load() }
-    catch { toast({ title:"Erro ao remover", variant:"destructive" }) }
+    try { await api.delete(`/integrantes/${id}`); toast.success("Removido."); await load() }
+    catch { toast.error("Erro ao remover") }
   }
 
   return (
@@ -117,7 +114,7 @@ export default function IntegrantesPage() {
           <p className="text-slate-400 text-sm mt-1">Músicos e colaboradores do ministério.</p>
         </div>
         {podeGerenciarInt && (
-          <Button onClick={abrirNovo} className="grad-brand glow-brand text-white font-semibold border-0 hover:opacity-90 transition-opacity">
+          <Button onClick={abrirNovo} className="grad-brand glow-brand text-white font-semibold border-0 hover:opacity-90">
             <Plus className="w-4 h-4 mr-1"/> Novo integrante
           </Button>
         )}
@@ -188,7 +185,6 @@ export default function IntegrantesPage() {
                 ? <img src={foto} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-blue-500"/>
                 : <><Upload className="w-5 h-5 text-slate-500 mb-1.5"/><span className="text-xs text-slate-500">Foto do integrante</span></>}
             </label>
-
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-slate-400 text-xs">Nome *</Label>
@@ -199,7 +195,7 @@ export default function IntegrantesPage() {
               <div>
                 <Label className="text-slate-400 text-xs">Nível *</Label>
                 <Select value={form.nivel} onValueChange={v=>set("nivel",v)}>
-                  <SelectTrigger className="mt-1 bg-[#111830] border-white/10 h-9 text-sm focus:ring-blue-500/20">
+                  <SelectTrigger className="mt-1 bg-[#111830] border-white/10 h-9 text-sm">
                     <SelectValue/>
                   </SelectTrigger>
                   <SelectContent className="bg-[#111830] border-white/10">
@@ -208,7 +204,6 @@ export default function IntegrantesPage() {
                 </Select>
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-slate-400 text-xs">E-mail *</Label>
@@ -222,7 +217,6 @@ export default function IntegrantesPage() {
                   className="mt-1 bg-[#111830] border-white/10 focus-visible:border-blue-500 text-sm h-9"/>
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-slate-400 text-xs">
@@ -239,7 +233,6 @@ export default function IntegrantesPage() {
                 {erros.senha2 && <p className="text-red-400 text-xs mt-1">{erros.senha2}</p>}
               </div>
             </div>
-
             <div>
               <Label className="text-slate-400 text-xs">Funções / Instrumentos</Label>
               <div className="flex gap-2 mt-1">

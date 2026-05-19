@@ -1,14 +1,13 @@
 "use client"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { Integrante, Substituto } from "@/types"
 import { getRoleCat, roleColor, cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 
 export default function SubstituicoesPage() {
-  const { toast }             = useToast()
   const [ints, setInts]       = useState<Integrante[]>([])
   const [sel, setSel]         = useState("")
   const [subs, setSubs]       = useState<Substituto[]>([])
@@ -26,14 +25,14 @@ export default function SubstituicoesPage() {
         .filter(([,ns]) => ns.size > 1)
         .map(([funcao,ns]) => ({ funcao, nomes:[...ns] }))
         .sort((a,b) => a.funcao.localeCompare(b.funcao)))
-    }).catch(() => toast({ title:"Erro ao carregar", variant:"destructive" }))
-  }, [toast])
+    }).catch(() => toast.error("Erro ao carregar"))
+  }, [])
 
   async function buscar(id: string) {
     setSel(id); if(!id){ setSubs([]); return }
     setLoading(true)
     try { const r = await api.get(`/substitutos/${id}`); setSubs(r.data) }
-    catch { toast({ title:"Erro ao buscar", variant:"destructive" }) }
+    catch { toast.error("Erro ao buscar substitutos") }
     finally { setLoading(false) }
   }
 
@@ -47,7 +46,7 @@ export default function SubstituicoesPage() {
       <div className="bg-[#0d1225] border border-white/5 rounded-2xl p-5 mb-4">
         <Label className="text-slate-400 text-xs mb-2 block">Selecione um integrante</Label>
         <Select value={sel} onValueChange={buscar}>
-          <SelectTrigger className="bg-[#111830] border-white/10 h-10 text-sm focus:ring-blue-500/20">
+          <SelectTrigger className="bg-[#111830] border-white/10 h-10 text-sm">
             <SelectValue placeholder="— Escolha um integrante —"/>
           </SelectTrigger>
           <SelectContent className="bg-[#111830] border-white/10">

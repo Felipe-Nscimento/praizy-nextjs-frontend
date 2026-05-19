@@ -7,13 +7,12 @@ import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Eye, EyeOff, Music } from "lucide-react"
 
 export default function LoginPage() {
-  const router     = useRouter()
-  const { login }  = useAuth()
-  const { toast }  = useToast()
+  const router    = useRouter()
+  const { login } = useAuth()
   const [email, setEmail]     = useState("")
   const [senha, setSenha]     = useState("")
   const [showPw, setShowPw]   = useState(false)
@@ -39,7 +38,7 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(45,124,246,0.15)_0%,transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_80%,rgba(0,200,224,0.06)_0%,transparent_50%)]" />
 
-      <div className="relative z-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl grad-brand flex items-center justify-center mx-auto mb-3 glow-blue">
             <Music className="w-7 h-7 text-white" />

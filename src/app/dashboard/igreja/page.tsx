@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { Igreja } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,6 @@ import { Upload } from "lucide-react"
 
 export default function IgrejaPage() {
   const { podeGerenciarInt } = useAuth()
-  const { toast }            = useToast()
   const [igreja, setIgreja] = useState<Igreja|null>(null)
   const [nome, setNome]     = useState("")
   const [end, setEnd]       = useState("")
@@ -21,8 +20,8 @@ export default function IgrejaPage() {
   useEffect(() => {
     api.get("/minha-igreja").then(r => {
       setIgreja(r.data); setNome(r.data.nome); setEnd(r.data.endereco||""); setLogo(r.data.logo||null)
-    }).catch(() => toast({ title:"Erro ao carregar", variant:"destructive" }))
-  }, [toast])
+    }).catch(() => toast.error("Erro ao carregar"))
+  }, [])
 
   function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if(!f) return
@@ -32,10 +31,12 @@ export default function IgrejaPage() {
   }
 
   async function salvar() {
-    if(!nome.trim()) { toast({ title:"Informe o nome", variant:"destructive" }); return }
+    if(!nome.trim()) { toast.error("Informe o nome da igreja"); return }
     setSaving(true)
-    try { await api.put("/minha-igreja", { nome, endereco:end, logo }); toast({ title:"Igreja atualizada!" }) }
-    catch { toast({ title:"Erro ao salvar", variant:"destructive" }) }
+    try {
+      await api.put("/minha-igreja", { nome, endereco: end, logo })
+      toast.success("Igreja atualizada!")
+    } catch { toast.error("Erro ao salvar") }
     finally { setSaving(false) }
   }
 

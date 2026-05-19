@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { api } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { Escala, Integrante } from "@/types"
 import { initials, fmtDate, getRoleCat, roleColor, cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,6 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 
 export default function EscalasPage() {
   const { podeCriarEscala, podeEditarEscala } = useAuth()
-  const { toast }             = useToast()
   const [escalas, setEscalas] = useState<Escala[]>([])
   const [ints, setInts]       = useState<Integrante[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,13 +28,13 @@ export default function EscalasPage() {
     try {
       const [e, i] = await Promise.all([api.get("/escalas"), api.get("/integrantes")])
       setEscalas(e.data); setInts(i.data)
-    } catch { toast({ title:"Erro ao carregar", variant:"destructive" }) }
+    } catch { toast.error("Erro ao carregar") }
     finally { setLoading(false) }
-  }, [toast])
+  }, [])
 
   useEffect(() => { load() }, [load])
 
-  const funcoes     = [...new Set(ints.flatMap(m => m.funcoes))].sort()
+  const funcoes      = [...new Set(ints.flatMap(m => m.funcoes))].sort()
   const intsDeFuncao = (f: string) => ints.filter(m => m.funcoes.includes(f))
 
   function abrirNova() {
@@ -50,24 +49,24 @@ export default function EscalasPage() {
   }
 
   async function salvar() {
-    if(!data) { toast({ title:"Informe a data", variant:"destructive" }); return }
+    if(!data) { toast.error("Informe a data"); return }
     const slotsArr = Object.entries(slots).filter(([,id])=>id).map(([funcao,integrante_id])=>({funcao,integrante_id}))
-    if(!slotsArr.length) { toast({ title:"Escale ao menos um integrante", variant:"destructive" }); return }
+    if(!slotsArr.length) { toast.error("Escale ao menos um integrante"); return }
     setSaving(true)
     try {
       if(!editId) await api.post("/escalas", { data, evento, slots: slotsArr })
       else        await api.put(`/escalas/${editId}`, { data, evento, slots: slotsArr })
-      toast({ title: editId ? "Escala atualizada!" : "Escala criada! WhatsApp enviado." })
+      toast.success(editId ? "Escala atualizada!" : "Escala criada! WhatsApp enviado.")
       setOpen(false); await load()
     } catch(err: any) {
-      toast({ title: err.response?.data?.detail || "Erro", variant:"destructive" })
+      toast.error(err.response?.data?.detail || "Erro")
     } finally { setSaving(false) }
   }
 
   async function deletar(id: number) {
     if(!confirm("Remover esta escala?")) return
-    try { await api.delete(`/escalas/${id}`); toast({ title:"Removida." }); await load() }
-    catch { toast({ title:"Erro", variant:"destructive" }) }
+    try { await api.delete(`/escalas/${id}`); toast.success("Removida."); await load() }
+    catch { toast.error("Erro ao remover") }
   }
 
   return (
@@ -162,7 +161,7 @@ export default function EscalasPage() {
                   <div key={f} className="flex items-center gap-3">
                     <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 w-28 text-center truncate", roleColor[getRoleCat(f)])}>{f}</span>
                     <Select value={String(slots[f]||"")} onValueChange={v=>setSlots(s=>({...s,[f]:Number(v)||0}))}>
-                      <SelectTrigger className="flex-1 bg-[#111830] border-white/10 h-8 text-sm focus:ring-blue-500/20">
+                      <SelectTrigger className="flex-1 bg-[#111830] border-white/10 h-8 text-sm">
                         <SelectValue placeholder="— Não escalar —"/>
                       </SelectTrigger>
                       <SelectContent className="bg-[#111830] border-white/10">
